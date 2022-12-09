@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/tvUserNameRow"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/header_shape"
+        android:gravity="center"
+        android:text="@string/username"
+        android:textColor="#2D2F31"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvFullNameRow"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/header_shape"
+        android:gravity="center"
+        android:text="@string/full_name"
+        android:textColor="#2D2F31"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvEmailRow"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/header_shape"
+        android:gravity="center"
+        android:text="@string/email"
+        android:textColor="#2D2F31"
+        android:textSize="14sp" />
+</LinearLayout>

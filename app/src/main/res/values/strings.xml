@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">SQLite</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="close">Close</string>
+    <string name="create_backup">Create Backup</string>
+    <string name="restore_backup">Restore Backup</string>
+    <string name="manage_users">Manage Users</string>
+    <string name="user_data">User Data</string>
+    <string name="welcome">Welcome</string>
+    <string name="back">Back</string>
+    <string name="new_user">New user</string>
+    <string name="user">User: </string>
+    <string name="update_user">Update User</string>
+    <string name="delete_user">Delete user</string>
+    <string name="list_users">list users</string>
+    <string name="full_name">Full name</string>
+    <string name="email">Email</string>
+</resources>
