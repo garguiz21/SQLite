@@ -1,16 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
-
+apply plugin: 'kotlin-kapt'
 android {
     namespace 'es.ua.eps.sqlite'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "es.ua.eps.sqlite"
         minSdk 21
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -27,19 +28,38 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions {
+        exclude 'META-INF/atomicfu.kotlin_module'
+    }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
 }
 
 dependencies {
-
-    implementation 'androidx.core:core-ktx:1.7.0'
+    def room_version = '2.4.3'
+    def lifecycleVersion = '2.5.0'
+    implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation "androidx.recyclerview:recyclerview:1.1.0"
-    testImplementation 'junit:junit:4.13.2'
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
-}
+
+    implementation "androidx.room:room-ktx:$room_version"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-rxjava2:$room_version"
+    androidTestImplementation "androidx.room:room-testing:$room_version"
+
+    // Lifecycle components
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
+
+
+    implementation "androidx.activity:activity-ktx:1.6.1"
+    implementation "androidx.fragment:fragment-ktx:1.5.4"
+    }

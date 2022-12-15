@@ -6,18 +6,18 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import es.ua.eps.sqlite.R
-import es.ua.eps.sqlite.database.UserDTO
+import es.ua.eps.sqlite.database.UserEntity
 
-class RecyclerAdapter(val users: ArrayList<UserDTO>): RecyclerView.Adapter<RecyclerAdapter.ViewHolder?>() {
+class RecyclerAdapter(val users: List<UserEntity>): RecyclerView.Adapter<RecyclerAdapter.ViewHolder?>() {
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         var username: TextView
         var fullname: TextView
         var email: TextView
 
-        fun bind(l: UserDTO) {
-            username.text = l.user_name
-            fullname.text = l.full_name
+        fun bind(l: UserEntity) {
+            username.text = l.userName
+            fullname.text = l.fullName
             email.text = l.email
         }
 

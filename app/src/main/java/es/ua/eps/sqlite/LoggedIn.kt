@@ -14,8 +14,8 @@ class LoggedIn : AppCompatActivity() {
         val tvUser: TextView = findViewById(R.id.tvUser)
         val tvUserName: TextView = findViewById(R.id.tvUsername)
 
-        tvUser.text = MainActivity.LOGGED_USER?.full_name
-        tvUserName.text = MainActivity.LOGGED_USER?.user_name
+        tvUser.text = MainActivity.LOGGED_USER?.fullName
+        tvUserName.text = MainActivity.LOGGED_USER?.userName
 
         findViewById<Button>(R.id.bBack).setOnClickListener {
             finish()

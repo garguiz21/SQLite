@@ -11,17 +11,30 @@ import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import es.ua.eps.sqlite.database.SQLiteManager
-import es.ua.eps.sqlite.database.UserDTO
+import es.ua.eps.sqlite.database.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.nio.channels.FileChannel
 
 class MainActivity : AppCompatActivity() {
-    var dataBase: SQLiteManager? = null
+
+    val database by lazy {
+        UserDatabase.getDatabase(this)
+    }
+    val repository by lazy {
+        UserRepository(database.userDao())
+    }
+    private val userViewModel: UserViewModel by viewModels {
+        UserModelFactory(repository)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         title = getString(R.string.app_name)
-        dataBase = SQLiteManager.getInstance(this)
 
         val etUsername: EditText = findViewById(R.id.etUsername)
         val etPassword: EditText = findViewById(R.id.etPassword)
@@ -31,9 +44,9 @@ class MainActivity : AppCompatActivity() {
             val userName = etUsername.text.toString().trim()
             val password = etPassword.text.toString().trim()
             if(userName.isEmpty() || password.isEmpty()){
-                Toast.makeText(this, "All inputs are requiered", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "All inputs are required", Toast.LENGTH_SHORT).show()
             } else {
-                val user = dataBase?.logIn(userName, password)
+                val user = userViewModel.logIn(userName, password)
                 if(user != null){
                     LOGGED_USER = user
                     startActivity(Intent(this, LoggedIn::class.java))
@@ -59,12 +72,10 @@ class MainActivity : AppCompatActivity() {
                 val uri = Uri.parse("package:" + this.packageName)
                 startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri))
             } else {
-                val isSuccess = dataBase?.backUp()
-                var toast: Toast? = null
-                if(isSuccess == true){
-                    toast = Toast.makeText(this, "Backup successfully", Toast.LENGTH_SHORT)
+               val toast = if(backUp()){
+                    Toast.makeText(this, "Backup successfully", Toast.LENGTH_SHORT)
                 }else {
-                    toast = Toast.makeText(this, "Unable to make backup, allow permission", Toast.LENGTH_SHORT)
+                    Toast.makeText(this, "Unable to make backup, allow permission", Toast.LENGTH_SHORT)
                 }
                 toast.show()
             }
@@ -74,9 +85,8 @@ class MainActivity : AppCompatActivity() {
                 val uri = Uri.parse("package:" + this.packageName)
                 startActivity(Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri))
             } else {
-                val isSuccess = dataBase?.restore()
-                var toast: Toast? = null
-                if(isSuccess == true){
+                val toast: Toast?
+                if(restore()){
                     toast = Toast.makeText(this, "Backup has been loaded", Toast.LENGTH_SHORT)
                 }else {
                     toast = Toast.makeText(this, "Unable to load backup", Toast.LENGTH_SHORT)
@@ -91,7 +101,63 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun backUp():Boolean {
+        database.close()
+        println("here")
+        try {
+            val sd: File = Environment.getExternalStorageDirectory()
+            if (sd.canWrite()) {
+                val backupDBPath = UserDatabase.DATABASE_NAME
+                val currentDBPath = database.openHelper.writableDatabase.path
+
+                val currentDB = File(currentDBPath)
+                println("backUP " + currentDB.path)
+                val backupDB = File(sd, backupDBPath)
+                if (currentDB.exists()) {
+                    val src: FileChannel = FileInputStream(currentDB).channel
+                    val dst: FileChannel = FileOutputStream(backupDB).channel
+                    dst.transferFrom(src, 0, src.size())
+                    src.close()
+                    dst.close()
+                    return true
+                }
+                return false
+            }
+            return false
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
+    fun restore():Boolean {
+        database.close()
+        try {
+            val sd = Environment.getExternalStorageDirectory()
+            if (sd.canWrite()) {
+                val backupDBPath = UserDatabase.DATABASE_NAME
+                val currentDBPath = database.openHelper.writableDatabase.path
+                val currentDB = File(currentDBPath)
+                println("restore " + currentDB.path)
+                val backupDB = File(sd, backupDBPath)
+                if (currentDB.exists()) {
+                    val src = FileInputStream(backupDB).channel
+                    val dst = FileOutputStream(currentDB).channel
+                    dst.transferFrom(src, 0, src.size())
+                    src.close()
+                    dst.close()
+                    return true
+                }
+            }
+            return false
+        } catch (e: java.lang.Exception) {
+            return false
+        }
+    }
+
+
+
     companion object {
-        var LOGGED_USER: UserDTO? = null
+        var LOGGED_USER: UserEntity? = null
+
     }
 }

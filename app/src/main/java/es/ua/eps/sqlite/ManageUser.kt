@@ -6,34 +6,42 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.Button
 import android.widget.Spinner
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import es.ua.eps.sqlite.database.SQLiteManager
-import es.ua.eps.sqlite.database.UserDTO
+import es.ua.eps.sqlite.database.*
 
 class ManageUser : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     var itemSelected: Int = 0
-    var userList: ArrayList<UserDTO> = ArrayList()
+    private var userList: List<UserEntity> = ArrayList()
+    val database by lazy {
+        UserDatabase.getDatabase(this)
+    }
+    val repository by lazy {
+        UserRepository(database.userDao())
+    }
+    private val userViewModel: UserViewModel by viewModels {
+        UserModelFactory(repository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manage_user)
         title = getString(R.string.manage_users)
-        val dataBase: SQLiteManager = SQLiteManager.getInstance(this)
-        userList = dataBase.getUsersQuery()
 
         val spinner = findViewById<Spinner>(R.id.spinner)
         spinner.onItemSelectedListener = this
-
-        val adapter = SpinnerAdapter(applicationContext, userList)
-        spinner.adapter = adapter
-
-
-
         val bUpdateUser: Button = findViewById(R.id.bUpdateUser)
-        bUpdateUser.isEnabled = userList.isNotEmpty()
         val bDeleteUser: Button = findViewById(R.id.bDeleteUser)
-        bDeleteUser.isEnabled = userList.isNotEmpty()
+
+        userViewModel.users.observe(this){
+            userList = it
+            val adapter = SpinnerAdapter(applicationContext, userList)
+            spinner.adapter = adapter
+            bUpdateUser.isEnabled = userList.isNotEmpty() == true
+            bDeleteUser.isEnabled = userList.isNotEmpty() == true
+        }
+
 
         findViewById<Button>(R.id.bNewUser).setOnClickListener {
             startActivity(Intent(this, NewUser::class.java))
@@ -50,14 +58,7 @@ class ManageUser : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 .setTitle("Delete User")
                 .setMessage("Do you really want to delete the selected user?")
                 .setPositiveButton(android.R.string.ok) { _, _ ->
-                    val isSuccessfully = dataBase.deleteUserExec(itemSelected)
-                    println(isSuccessfully)
-                    if(isSuccessfully){
-                        userList = dataBase.getUsersRawQuery()
-                        spinner.adapter = SpinnerAdapter(applicationContext, userList)
-                        bUpdateUser.isEnabled = userList.isNotEmpty()
-                        bDeleteUser.isEnabled = userList.isNotEmpty()
-                    }
+                    userViewModel.deleteUser(userList[itemSelected])
                 }.setNegativeButton(android.R.string.cancel) {_,_ ->}
             builder.show()
         }
@@ -80,5 +81,4 @@ class ManageUser : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     companion object{
        val UPDATE_USER_ID = "UPDATE_USER_ID"
     }
-
 }

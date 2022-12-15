@@ -6,27 +6,36 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import es.ua.eps.sqlite.database.SQLiteManager
-import es.ua.eps.sqlite.database.UserDTO
+import androidx.activity.viewModels
+import es.ua.eps.sqlite.database.*
 
 class UpdateUser : AppCompatActivity() {
+    val database by lazy {
+        UserDatabase.getDatabase(this)
+    }
+    val repository by lazy {
+        UserRepository(database.userDao())
+    }
+    private val userViewModel: UserViewModel by viewModels {
+        UserModelFactory(repository)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_update_user)
         title = getString(R.string.update_user)
         val userId: Int = intent.getIntExtra(ManageUser.UPDATE_USER_ID, 0)
 
-        val dataBase = SQLiteManager.getInstance(this)
 
         val etFullName: EditText = findViewById(R.id.etUserUpdateInput)
         val etUserName: EditText = findViewById(R.id.etUserNameUpdateInput)
         val etEmail: EditText = findViewById(R.id.etEmailUpdateInput)
         val etPassword: EditText = findViewById(R.id.etPasswordUpdateInput)
 
-        val user: UserDTO = dataBase.getUserQuery(userId.toInt())!!
+        val user: UserEntity = userViewModel.getUser(userId)!!
 
-        etFullName.setText(user.full_name)
-        etUserName.setText(user.user_name)
+        etFullName.setText(user.fullName)
+        etUserName.setText(user.userName)
         etEmail.setText(user.email)
         etPassword.setText(user.password)
 
@@ -36,15 +45,12 @@ class UpdateUser : AppCompatActivity() {
             val email: String = etEmail.text.toString().trim()
             val password: String = etPassword.text.toString().trim()
             if(!fullName.isEmpty() && !userName.isEmpty() && !email.isEmpty() && !password.isEmpty()){
-                if(dataBase.updateUserExec(userId, userName, fullName, password, email)) {
+                userViewModel.updateUser(UserEntity(userName, fullName, password, email, userId))
                     Toast.makeText(this, "User updated successfully", Toast.LENGTH_SHORT).show()
                     etFullName.setText("")
                     etUserName.setText("")
                     etEmail.setText("")
                     etPassword.setText("")
-                } else {
-                    Toast.makeText(this, "Couldn´t update user", Toast.LENGTH_SHORT).show()
-                }
             }
         }
         findViewById<Button>(R.id.bBackManageUserUpdate).setOnClickListener {
